@@ -1,25 +1,21 @@
-package model.entidades;
+package model.entites;
 
-public abstract class Feedbacks {
+
+
+public class Feedback {
 	
 	private  String feedback;
-	
 	private String tipo;
 	
 	//construtor que inicia os atributos
-	public Feedbacks(String feedback,String tipo) {
-		
+	public Feedback(String feedback,String tipo) {
 		this.feedback = feedback;
-		this.tipo = tipo;
-		
+		this.tipo = tipo;	
 	}
-
-
 	//metodo que retorna o valor do atributo feedbacks
 	public String getFeedback() {
 		return feedback;
 	}
-
 
 	//atribui valor ao atributo feedback
 	public void setFeedback(String feedback) {
@@ -35,7 +31,6 @@ public abstract class Feedbacks {
 	public void setTipo(String tipo) {
 		this.tipo = tipo;
 	}
-	
-	
+
 	
 }

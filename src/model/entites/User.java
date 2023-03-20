@@ -1,30 +1,22 @@
-package model.entidades;
+package model.entites;
 
-import model.execption.DomainExecption;
 
-public class User {
+
+public  class User  {
 	
 	private String userName; //nome completo do usuário
-	
 	private String userPassword; // senha de cadastro do usuário
-	
-	private String userIdentity;// id do usuario
-
+	private String Id;// id do usuario
+	private Boolean adm;
 	//construtor para inicializar os atributos
 	
-	public User(String userName, String userPassword, String userIdentity) {
-		
-		if (userName == "" || userName ==  " " || userIdentity == "" || userIdentity ==  " " 
-				|| userPassword == "" || userPassword ==  " ") {
-			
-			throw new DomainExecption("Você deve preencher  todos os dados.");
-		}
-	
+	public User(String userName, String userPassword, String Id) {
+
 		this.userName = userName;
 		
 		this.userPassword = userPassword;
 		
-		this.userIdentity = userIdentity;
+		this.Id = Id;
 	}
 	
 	// retorna o valor de Username
@@ -48,12 +40,21 @@ public class User {
 	}
 	
 	// retorna o valor a de userIdentity
-	public String getUserIdentity() {
-		return userIdentity;
+	public String getId() {
+		return Id;
 	}
 	
 	// atribui valor a userIdentity
 	public void setUserIdentity(String userIdentity) {
-		this.userIdentity = userIdentity;
+		this.Id = userIdentity;
 	}
+
+	public Boolean getAdm() {
+		return adm;
+	}
+
+	public void setAdm(Boolean adm) {
+		this.adm = adm;
+	}
+	
 }
