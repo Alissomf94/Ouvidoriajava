@@ -7,11 +7,14 @@ import java.sql.SQLException;
 
 import DB.DataBase;
 import model.Dao.UserDao;
+import model.entites.Employee;
+import model.entites.Student;
 import model.entites.User;
+import model.execption.DomainExecption;
 
 public class UserDaoJDBC implements UserDao {
 	private Connection con;
-	
+
 	public UserDaoJDBC(Connection con) {
 		this.con = con;
 	}
@@ -34,15 +37,16 @@ public class UserDaoJDBC implements UserDao {
 			st.setString(3, user.getUserName());
 			st.setBoolean(4, user.getAdm());
 			st.executeUpdate();
+
+		}
+
+		catch (SQLException e) 
+		{
+			System.err.println(e.getMessage());
 			
-
-		}
-
-		catch (SQLException e) {
-
-			e.printStackTrace();
-		}
-		finally {
+		} 
+		finally 
+		{
 			DataBase.closeStament(st);
 		}
 
@@ -50,90 +54,116 @@ public class UserDaoJDBC implements UserDao {
 
 	@Override
 	public String findAll() {
-		String ListStudent  = "";
+		String ListStudent = "";
 		PreparedStatement st = null;
-		
+
 		ResultSet rs = null;
-		
+
 		try {
-			st =  con.prepareStatement("SELECT * FROM users ORDER BY id");
+			st = con.prepareStatement("SELECT * FROM users ORDER BY id");
 			rs = st.executeQuery();
-			
+
 			while (rs.next()) {
 				if (rs.getBoolean("adm") == false) {
-					ListStudent +="\nStudent: " + rs.getString("Id");
+					ListStudent += "\nStudent: " + rs.getString("Id");
 				}
 			}
-			
- 		} catch (Exception e) {
- 			e.printStackTrace();
- 			
-		}
+			if (ListStudent == "") {
+				throw new DomainExecption("Lista vazia");
+			}
+
+		} 
+		catch (SQLException e) 
+		{
+			System.err.println(e.getMessage());
+
+		} 
 		finally {
+			
+			DataBase.closeResultSet(rs);
 			DataBase.closeStament(st);
 		}
-		if (ListStudent == "") {
-			return "\nO sistema não possui alunos cadastrados.";
-		}
+		
 		return ListStudent;
 	}
 
 	@Override
 	public boolean checkLogin(String Identyti, String password) {
-		PreparedStatement st = null;
-		ResultSet rs = null;
-		String passwordUser = "false";
-		
+		Object obj = findById(Identyti);
 		try {
-			st = con.prepareStatement("SELECT * FROM users WHERE id =?");
-			st.setString(1,Identyti);
-			rs =  st.executeQuery();
-			
-			while(rs.next()) {
-				passwordUser = rs.getString("password");
+			if (obj == null) {
+				throw new DomainExecption("Id incorreto.");
 			}
+	
+			String passwordDb = ((User) obj).getUserPassword();
+
+			if (!passwordDb.equals(password)) 
+				throw new DomainExecption("Senha incorreta.");
 			
-			if (password.equals(passwordUser)) {
 				return true;
-			}
-		
-		} 
-		
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-			DataBase.closeResultSet(rs);
-			DataBase.closeStament(st);
 		}
 		
+		catch (DomainExecption e) 
+		{
+			System.err.println(e.getMessage());
+		}
 		
 		return false;
 	}
 
 	@Override
 	public boolean checkAccessType(String id) {
-		
+		Object obj = findById(id);
+		try {
+			if (obj == null) {
+				throw new DomainExecption("Usuario não encontrado");
+			}
+
+		} catch (DomainExecption e) {
+			System.err.println(e.getMessage());
+		}
+
+		return ((User) obj).getAdm();
+
+	}
+
+	@Override
+	public Object findById(String id) {
+
 		PreparedStatement st = null;
 		ResultSet rs = null;
-		
+
 		try {
 			st = con.prepareStatement("SELECT * FROM users WHERE id =?");
 			st.setString(1, id);
 			rs = st.executeQuery();
-			
-			while (rs.next()) {
-				return rs.getBoolean("adm");
+			String name = null;
+			String password;
+			String idUser = null;
+			boolean adm = false;
+
+			while (rs.next()) 
+			{
+				name = rs.getString("name");
+				password = rs.getString("password");
+				idUser = rs.getString("id");
+				adm = rs.getBoolean("adm");
+				
+				if (adm == true)
+
+					return new Employee(name, password, idUser);
+
+				else if (adm == false)
+					return new Student(name, password, idUser);
 			}
 		}
-		catch (SQLException e) {
-			
+		
+		catch (SQLException e) 
+		{
+			System.err.println(e.getMessage());
 		}
-		finally {
-			DataBase.closeResultSet(rs);
-			DataBase.closeStament(st);
-		}
-		return false;
+		
+		return null;
 	}
 
 }

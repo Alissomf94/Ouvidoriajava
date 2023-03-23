@@ -2,7 +2,7 @@ package model.entites;
 
 
 
-public  class User  {
+public abstract class User  {
 	
 	private String userName; //nome completo do usuário
 	private String userPassword; // senha de cadastro do usuário
@@ -56,5 +56,9 @@ public  class User  {
 	public void setAdm(Boolean adm) {
 		this.adm = adm;
 	}
-	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return Id;
+	}
 }

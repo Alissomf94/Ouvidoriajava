@@ -7,5 +7,6 @@ public interface UserDao {
 	String findAll ();
 	boolean checkLogin(String Identyti,String password);
 	boolean checkAccessType (String id);
+	Object findById (String id);
 	
 }

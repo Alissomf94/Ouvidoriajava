@@ -1,27 +1,24 @@
 package application;
 
 import java.sql.SQLException;
-import java.util.Scanner;
 
-
+import DB.DataBase;
 import model.Dao.DaoFactory;
 import model.Dao.FeedbackDao;
 import model.Dao.UserDao;
 import model.entites.*;
+import model.util.InputValidation;
 
 
 public class Programa {
 	
 	public static void main(String[] args) throws SQLException {
 		
-		Scanner input = new Scanner (System.in);
-		
 		UserDao userDao = DaoFactory.createUserDao();
 		FeedbackDao feedbackDao = DaoFactory.createFeedbackDao();
 		
 		String closeProgram = "N";
 
-		
 		// comando de repetição para prender o usuario no programa ate que ele deseje encerarr
 		while (closeProgram == "N") {
 			
@@ -30,37 +27,40 @@ public class Programa {
 			System.out.println("-----------Opcções-----------");
 			System.out.println("1-Cadastrar\n2-Login\n3-Sair");
 			
-			opcaoMenuPrincipal = input.nextInt();
-			input.nextLine();
+			opcaoMenuPrincipal = InputValidation.validationInt(opcaoMenuPrincipal);
+			
+			String name = null;
+			String password = null;
+			String id = null;
 			
 			//cadastro de um usuario
 			if (opcaoMenuPrincipal == 1) {
 				System.out.println("\n1- estudante\n2-Funcionario");
-				int opcaoMenuCadastro = input.nextInt();
-				input.nextLine();
+				int opcaoMenuCadastro = 0;
+				opcaoMenuCadastro = InputValidation.validationInt(opcaoMenuCadastro);
 				
 				if (opcaoMenuCadastro == 1) {
 					System.out.println("\nNome: ");
-					String name = input.nextLine();
+					name = InputValidation.validationString(name);
 					
 					System.out.println("Senha: ");
-					String password = input.nextLine();
+					password = InputValidation.validationString(password);
 					
 					System.out.println("Id:  ");
-					String id = input.nextLine();
+					id = InputValidation.validationString(id);
 					
 					Student student = new Student(name, password,id);
 					userDao.insert(student);
 				}
-				else {
+				else if (opcaoMenuCadastro == 2 ){
 					System.out.println("\nNome: ");
-					String name = input.nextLine();
+					name = InputValidation.validationString(name);
 					
 					System.out.println("Senha: ");
-					String password = input.nextLine();
+					password = InputValidation.validationString(password);
 					
 					System.out.println("Id:  ");
-					String id = input.nextLine();
+					id = InputValidation.validationString(id);
 					
 					Employee employee = new Employee(name, password,id);
 					userDao.insert(employee);
@@ -71,14 +71,14 @@ public class Programa {
 			} else if (opcaoMenuPrincipal == 2) {
 
 				System.out.println("Id: ");
-				String Id = input.nextLine();
+				id = InputValidation.validationString(id);
 
 				System.out.println("Senha: ");
-				String password = input.nextLine();
+				password = InputValidation.validationString(password);
 				//verificção de acesso
-				if (userDao.checkLogin(Id, password)) {
+				if (userDao.checkLogin(id, password)) {
 					
-					if (!userDao.checkAccessType(Id)) {
+					if (!userDao.checkAccessType(id)) {
 			
 						String sairMenuAluno = "N";
 						
@@ -87,48 +87,49 @@ public class Programa {
 							System.out.println("-------Menu aluno-------");
 							System.out.println("\n1- Adicionar feedback\n2- Visualizar todos os feedbacks" + "\n3-Sair");
 
-							int opcao3 = input.nextInt();
-							input.nextLine();
+							int opcao3 = 0;
+							opcao3 = InputValidation.validationInt(opcao3);
 
 							switch (opcao3) {
 							//opcao de adicionar feedback
 							
 							case 1: {
-
+								int opcao4 = 0;
 								System.out.println("\nInforme o tipo de feedback: ");
 								System.out.println("\n1- Reclamação\n2-Elogio\n3-Sugestão");
 								
-								int opcao4 = input.nextInt();
-								input.nextLine();
-
+								opcao4 = InputValidation.validationInt(opcao4);
+								Feedback fd = null;
+								String description = null;
+								
 								switch (opcao4) {
-									
+								
 									case 1: 
 										System.out.println("\nInforme o feedback: ");
-										String description = input.nextLine();
+										description = InputValidation.validationString(description);
 										
-										Feedback fd = new Feedback( description,"reclamação");
-										feedbackDao.insert(fd, Id);
+										fd = new Feedback( description,"reclamação");
+										feedbackDao.insert(fd, id);
 										break;
 									
 									case 2:
 										System.out.println("\nInforme o feedback: ");
-										String description1 = input.nextLine();
+										description = InputValidation.validationString(description);
 										
-										Feedback fd1= new Feedback( description1,"elogio");
-										feedbackDao.insert(fd1, Id);
+										fd = new Feedback( description,"elogio");
+										feedbackDao.insert(fd, id);
 										break;
 	
 									case 3:
 										System.out.println("\nInforme o feedback: ");
-										String description2 = input.nextLine();
+										description = InputValidation.validationString(description);
 										
-										Feedback fd2= new Feedback( description2,"sugestão");
-										feedbackDao.insert(fd2, Id);
+										fd = new Feedback( description,"sugestão");
+										feedbackDao.insert(fd, id);
 										break;
 	
 									default:
-										System.out.println("\nOpcao invalida.");
+										
 										break;
 								}
 								break;
@@ -136,7 +137,7 @@ public class Programa {
 							//opcao de vizuailizar todos os feedbacks 
 							case 2:
 
-								System.out.println(feedbackDao.finBYStudent(Id));
+								System.out.println(feedbackDao.finBYStudent(id,userDao.findById(id)));
 								break;
 
 							case 3:
@@ -144,7 +145,7 @@ public class Programa {
 								break;
 
 							default:
-								System.out.println("\nOpcao invalida.");
+								
 								break;
 							}
 
@@ -157,42 +158,49 @@ public class Programa {
 						
 						while (sairMenuFuncionario == "N") {
 							System.out.println("\n1-Vizualizar Feedback\n2-Remover feedbacks\n3-sair");
-							int opcao4 = input.nextInt();
-							input.nextLine();
+							int opcao4 = 0;
+							opcao4 = InputValidation.validationInt(opcao4);
 							
 							switch (opcao4) {
 								
 								case 1:	
 									//opcao de visualizar feedbacks por aluno
-									System.out.println(feedbackDao.findAll());
+									System.out.println(userDao.findAll());
+									
 									System.out.println("\nInforme a id do aluno: ");
-									String idUser = input.nextLine();
-									System.out.println(feedbackDao.finBYStudent(idUser));
+									id = InputValidation.validationString(id);
+									
+									System.out.println(feedbackDao.finBYStudent(id,userDao.findById(id)));
 									break;
 									
 								case 2:
 									//opcao de remover feedbacks
-									System.out.println("1- Todos todos os feedbacks de um aluno\n2- Deleter feedback especifico ");
-									int opcaoDeletarFeedback = input.nextInt();
-									input.nextLine();
 									
-									if(opcaoDeletarFeedback == 1) {
+									System.out.println("1- Todos todos os feedbacks de um aluno\n2- Deleter feedback especifico ");
+									
+									int opcaoDeletarFeedback = 0;
+									opcaoDeletarFeedback = InputValidation.validationInt(opcaoDeletarFeedback);
+									
+									if(opcaoDeletarFeedback == 1) 
+									{
 										System.out.println(userDao.findAll());
-										System.out.println("\nInforme a id do aluno: ");
-										String idUser1 = input.nextLine();
 										
-										feedbackDao.deleteAllFeedbacks(idUser1);
+										System.out.println("\nInforme a id do aluno: ");
+										id = InputValidation.validationString(id);
+										
+										feedbackDao.deleteAllFeedbacks(userDao.findById(id));
 										
 									}
 									else {
-										System.out.println(feedbackDao.findAll());
+										String listFeedbacks = feedbackDao.findAll();
+										if (!listFeedbacks.equals("") ) {
+											System.out.println(listFeedbacks);
+											System.out.println("Numero do feedbacks: ");
+											int numberFeedback = 0;
+											numberFeedback = InputValidation.validationInt(numberFeedback);
 										
-										System.out.println("Numero do feedbacks: ");
-										int numberFeedback = input.nextInt();
-										input.nextLine();
-										
-										feedbackDao.delete(numberFeedback);
-										
+											feedbackDao.delete(numberFeedback);
+										}
 									}
 									break;
 									
@@ -203,7 +211,6 @@ public class Programa {
 									
 								default:
 									
-									System.out.println("\nOpcao invalida");
 									break;
 							}
 						}
@@ -216,8 +223,9 @@ public class Programa {
 				closeProgram = "s";
 			}
 		}
-		input.close();
-	
+		
+		InputValidation.closeScanner();
+		DataBase.closeConnection();
 	}	//fim do metodo main
 
 }// fim da class

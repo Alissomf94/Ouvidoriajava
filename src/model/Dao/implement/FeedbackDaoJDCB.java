@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import DB.DataBase;
 import model.Dao.FeedbackDao;
 import model.entites.Feedback;
+import model.entites.User;
+import model.execption.DomainExecption;
 
 public class FeedbackDaoJDCB implements FeedbackDao{
 	
@@ -30,30 +32,36 @@ public class FeedbackDaoJDCB implements FeedbackDao{
 				listFeedbacks += "\n------------------------------" + "\nNumero: " + rs.getInt("number") + "\nId do estudante: " + rs.getString("id") + "\nFeedbacks: " + rs.getString ("feedback")
 				+ "\nTipo do feedback: " + rs.getString("tipo") + "\n------------------------------";
 			}
+			if (listFeedbacks.equals("")) {
+				throw new DomainExecption("Lista vazia");
+			}
 		}
 		catch (SQLException e) {
-			System.out.println(e.getMessage());
+			System.err.println(e.getMessage());
+		}
+		catch (DomainExecption e) {
+			System.err.println(e.getMessage());
 		}
 		
 		finally {
 			DataBase.closeStament(st);
 			DataBase.closeResultSet(rs);
 		}
-		if (listFeedbacks == "") {
-			return "\nO sistema não possui feedback cadastrado";
-		}
 		
 		return listFeedbacks;
 	}
 
 	@Override
-	public String finBYStudent(String idEstudent) {
+	public String finBYStudent(String idEstudent,Object obj){
 		
 		PreparedStatement st = null;
 		String feedbackList = "";
 		ResultSet rs = null;
 		try {
 			
+			if (obj == null) {
+				throw new DomainExecption ("Usuario não encontrado");
+			}
 			st =  con.prepareStatement("SELECT * FROM feedbacks WHERE id =?");
 			
 			st.setString(1, idEstudent);
@@ -64,20 +72,22 @@ public class FeedbackDaoJDCB implements FeedbackDao{
 				feedbackList += "\nTipo do feedback: " + rs.getString("tipo") + "\nFeedback: " + rs.getString("feedback");
 			}
 			
+			if (feedbackList == "") {
+				throw new DomainExecption("Lista vazia");
+			}
 		} 
-		
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (DomainExecption e) {
+			System.err.println(e.getMessage());
 		}
-		
+		catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
 		finally {
 			DataBase.closeStament(st);
 			DataBase.closeResultSet(rs);
 		}
 		
-		if (feedbackList == "") {
-			return "\nNão possui feedbacks cadastrado.";
-		}
+		
 		return feedbackList;
 	}
 
@@ -94,9 +104,10 @@ public class FeedbackDaoJDCB implements FeedbackDao{
 			st.executeUpdate();
 			st.close();
 				
-		} catch (Exception e) {
+		} 
+		catch (SQLException e) {
 				
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 				
 		}
 		finally {
@@ -122,15 +133,12 @@ public class FeedbackDaoJDCB implements FeedbackDao{
 			st.setString(3,feedback.getFeedback());
 			
 			st.executeUpdate();	
-			System.out.println("\nFeedback adicionado.");
 			
-			st.close();
-				
 		} 
 			
 		catch (SQLException e) {
 				
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}	
 		finally {
 			DataBase.closeStament(st);
@@ -138,26 +146,32 @@ public class FeedbackDaoJDCB implements FeedbackDao{
 		
 	}
 	@Override
-	public void deleteAllFeedbacks(String id) {
+	public void deleteAllFeedbacks(Object user) {
 		PreparedStatement st = null;	
 		try {
-				
+			if (user == null) {
+				throw new DomainExecption("Usuario não encontrado");
+			}
 			st = con.prepareStatement(
 						
 					"DELETE FROM feedbacks WHERE id = ?");
 				
-			st.setString(1, id);
+			st.setString(1, ((User)user).getId());
 				
 			st.executeUpdate();
 			st.close();
-			
 				
-		} catch (Exception e) {
+		} 
+		catch (SQLException e) 
+		{
 				
-			e.printStackTrace();
-				
+			System.err.println(e.getMessage());	
 		}
-		finally {
+		catch (DomainExecption e) {
+			System.err.println(e.getMessage());
+		}
+		finally 
+		{
 			DataBase.closeStament(st);
 		}
 		
